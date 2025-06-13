@@ -46,7 +46,7 @@ def load_vectorstore():
 vectorstore = load_vectorstore()
 
 # Setup Ollama LLaMA 3
-llm = Ollama(model=LLM_MODEL)
+llm = Ollama(base_url="http://host.docker.internal:11434", model=LLM_MODEL)
 
 # Retrieval QA
 qa_chain = RetrievalQA.from_chain_type(

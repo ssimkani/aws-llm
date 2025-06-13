@@ -6237,7 +6237,7 @@ OpenSearch cluster.
 
 
 
----AWS FULL COURSE FOR BEGINNERS----
+---AWS Full Course----
 
 Cloud computing is at the cusp
 of technological advancement.
