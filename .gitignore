@@ -1,4 +1,5 @@
-# Vectorstore
+# Vectorstore and requirements files
+requirements.txt
 vectorstore/
 
 # Byte-compiled / optimized / DLL files
