@@ -1,0 +1,15 @@
+/* style/style_notes.css */
+
+/* === Global Layout === */
+body {
+    background-color: #343541;
+    color: #ffffff;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* === Title === */
+h1 {
+    color: #ffffff;
+    text-align: center;
+    margin-top: 1rem;
+}

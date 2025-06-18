@@ -1,71 +1,127 @@
+# src/app.py
+
 import streamlit as st
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.llms import Ollama
+from utils.rag_helper import load_vector_store, stream_rag_response
+from utils.config import *
+from langchain_ollama import OllamaLLM
 from langchain.chains import RetrievalQA
-from langchain.docstore.document import Document
-import os
+from datetime import datetime
 
-# ---- SETTINGS ----
-TXT_FILE_PATH = "data/aws_notes.txt"
-INDEX_DIR = "vectorstore/aws_faiss_index"
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-LLM_MODEL = "llama3.2:latest"
-
-st.set_page_config(page_title="AWS Chatbot", layout="wide")
-st.title("AWS Chatbot")
-
-
-@st.cache_resource
-def load_vectorstore():
-    embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-
-    # If FAISS index already exists, load it
-    if os.path.exists(INDEX_DIR):
-        return FAISS.load_local(
-            INDEX_DIR, embeddings, allow_dangerous_deserialization=True
-        )
-
-    # Else, create it from the .txt file
-    with open(TXT_FILE_PATH, "r") as file:
-        raw_text = file.read()
-
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    texts = text_splitter.split_text(raw_text)
-    docs = [Document(page_content=t) for t in texts]
-
-    vectorstore = FAISS.from_documents(docs, embeddings)
-
-    # Save FAISS index to disk
-    vectorstore.save_local(INDEX_DIR)
-
-    return vectorstore
-
-
-vectorstore = load_vectorstore()
-
-# Setup Ollama LLaMA 3
-llm = Ollama(base_url="http://host.docker.internal:11434", model=LLM_MODEL)
-
-# Retrieval QA
-qa_chain = RetrievalQA.from_chain_type(
-    llm=llm,
-    retriever=vectorstore.as_retriever(search_kwargs={"k": 5}),
-    return_source_documents=True,
+st.set_page_config(page_title=APP_TITLE, layout="wide")
+st.title(APP_TITLE)
+st.markdown(
+    "<style>" + open("style/style.css").read() + "</style>", unsafe_allow_html=True
 )
 
+# === Session State Initialization ===
+if st.session_state.get("reset_chat", False):
+    st.session_state["messages"] = []
+    st.session_state["reset_chat"] = False
 
-# ---- STREAMLIT UI ----
-user_query = st.text_area("Ask something about AWS:", height=100)
+# Ensure messages is initialized if not set or was cleared above
+if "messages" not in st.session_state or not st.session_state["messages"]:
+    st.session_state["messages"] = []
 
-if st.button("Submit") and user_query.strip():
-    with st.spinner("Thinking..."):
-        result = qa_chain({"query": user_query})
+# === Load Vector Store ===
+@st.cache_resource(ttl=30)
+def get_vector_store():
+    try:
+        return load_vector_store()
+    except Exception as e:
+        st.error(f"Failed to load FAISS vector store: {e}")
+        st.stop()
 
-        st.subheader("📘 Answer")
-        st.write(result["result"])
 
-        with st.expander("🔍 Retrieved Context"):
-            for i, doc in enumerate(result["source_documents"]):
-                st.markdown(f"**Chunk {i+1}:**\n{doc.page_content}\n---")
+vector_store = get_vector_store()
+
+# === Load Ollama LLM ===
+llm = OllamaLLM(model=OLLAMA_BASE_MODEL, SYSTEM_PROMPT=SYSTEM_PROMPT)
+
+# === Display Previous Messages ===
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+# === Chat Input ===
+prompt = st.chat_input("Ask me anything...")
+if prompt:
+    # Add user message to session state
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        # Stream assistant response with formatted markdown
+        retriever = vector_store.as_retriever(search_kwargs={"k": 6})
+        response, sources = stream_rag_response(prompt, llm, retriever, st.session_state.messages)
+        st.session_state.messages.append({"role": "assistant", "content": response})
+
+    # Source documents
+    with st.expander("📚 Relevant Notes"):
+        for i, doc in enumerate(sources):
+            st.markdown(
+                f"""
+                <div class=\"source-chunk\">
+                    <div class=\"chunk-title\">#{i+1}</div>
+                    <div class=\"chunk-body\">{doc.page_content.strip()}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+# === New Chat Button in Container ===
+for _ in range(35):
+    st.sidebar.write("")
+
+if st.sidebar.button("🆕 New Chat"):
+    st.session_state["messages"] = []
+    st.rerun()
+
+# # === RAG Chain ===
+# rag_chain = RetrievalQA.from_chain_type(
+#     llm=llm,
+#     retriever=vector_store.as_retriever(search_kwargs={"k": 6}),
+#     return_source_documents=True,
+# )
+
+# # === Chat Interface ===
+# for msg in st.session_state.messages:
+#     with st.chat_message(msg["role"]):
+#         st.markdown(msg["content"])
+
+# prompt = st.chat_input("Ask me anything...")
+# if prompt:
+#     st.session_state.messages.append({"role": "user", "content": prompt})
+#     with st.chat_message("user"):
+#         st.markdown(prompt)
+
+#     with st.chat_message("assistant"):
+#         result = rag_chain.invoke(prompt)
+#         response_stream = result["result"]
+#         sources = result.get("source_documents", [])
+
+#         # Stream typing effect
+#         full_response = ""
+#         response_box = st.empty()
+#         for token in response_stream.split():
+#             full_response += token + " "
+#             response_box.markdown(full_response + "▌")
+
+#         response_box.markdown(full_response)
+
+#         with st.expander("🔗 Sources"):
+#             for i, doc in enumerate(sources):
+#                 st.markdown(
+#                     f"""
+#                     <div class="source-chunk">
+#                         <div class="chunk-title">#{i+1}</div>
+#                         <div class="chunk-body">{doc.page_content.strip()}</div>
+#                     </div>
+#                     """,
+#                     unsafe_allow_html=True,
+#                 )
+
+#         st.session_state.messages.append(
+#             {"role": "assistant", "content": full_response}
+#         )
