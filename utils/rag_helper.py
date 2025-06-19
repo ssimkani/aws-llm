@@ -58,6 +58,9 @@ This is how you as my Cyber Fortress Assistant should respond:
 - Provide examples where applicable
 - Use headings and subheadings for clarity
 - Use tables for comparisons or structured data
+- Use diagrams or flowcharts for complex processes
+- Use emojis to enhance understanding and engagement
+- Use analogies or metaphors to explain complex concepts
 """
     return prompt
 
