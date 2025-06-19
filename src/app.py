@@ -34,8 +34,27 @@ def get_vector_store():
 
 vector_store = get_vector_store()
 
+# Add temp to session state
+if "temperature" not in st.session_state:
+    st.session_state["temperature"] = 0.3  # your preferred default
+
+# === Sidebar: Temperature Slider ===
+st.sidebar.markdown("### 🤖 Model Behavior")
+st.session_state["temperature"] = st.sidebar.slider(
+    "Response Style\n\n(Precision ←→ Creativity)",
+    min_value=0.0,
+    max_value=1.0,
+    value=0.3,
+    step=0.05,
+    help="Lower = deterministic, higher = creative",
+)
+
+st.sidebar.markdown(
+    f"**Current Behavior:** {'🎯 Precise' if st.session_state["temperature"] < 0.4 else '🧠 Creative' if st.session_state["temperature"] > 0.6 else '⚖️ Balanced'}"
+)
+
 # === Load Ollama LLM ===
-llm = OllamaLLM(model=OLLAMA_BASE_MODEL, temperature=0.3, SYSTEM_PROMPT=SYSTEM_PROMPT)
+llm = OllamaLLM(model=OLLAMA_BASE_MODEL, temperature=st.session_state["temperature"], SYSTEM_PROMPT=SYSTEM_PROMPT)
 
 # === Display Previous Messages ===
 for msg in st.session_state.messages:
@@ -71,7 +90,7 @@ if prompt:
             )
 
 # === New Chat Button in Container ===
-for _ in range(35):
+for _ in range(25):
     st.sidebar.write("")
 
 if st.sidebar.button("🆕 New Chat"):
