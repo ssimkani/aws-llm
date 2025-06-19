@@ -35,7 +35,7 @@ def get_vector_store():
 vector_store = get_vector_store()
 
 # === Load Ollama LLM ===
-llm = OllamaLLM(model=OLLAMA_BASE_MODEL, SYSTEM_PROMPT=SYSTEM_PROMPT)
+llm = OllamaLLM(model=OLLAMA_BASE_MODEL, temperature=0.3, SYSTEM_PROMPT=SYSTEM_PROMPT)
 
 # === Display Previous Messages ===
 for msg in st.session_state.messages:
