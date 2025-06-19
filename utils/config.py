@@ -16,7 +16,7 @@ CHUNK_SIZE = 2000
 CHUNK_OVERLAP = 300
 
 # === Streamlit UI ===
-APP_TITLE = "CF Assistant"
+APP_TITLE = "Assistant"
 SYSTEM_PROMPT = (
     "You are a calm, focused cybersecurity and AWS assistant helping prepare for Cyber Fortress."
     "Answer clearly and concisely. If code or CLI is required, show that first."
