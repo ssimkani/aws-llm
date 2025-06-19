@@ -1,10 +1,19 @@
-# pages/edit_notes.py
+# pages/notes.py
 
 import streamlit as st
-from utils.config import NOTES_FILE
+from utils.paths import *
 from utils.rag_helper import load_notes, split_notes, create_vector_store
 from streamlit_ace import st_ace
 import time
+from utils.paths import get_notes_path
+
+
+# Block access if user is not logged in
+if "uid" not in st.session_state:
+    st.warning("Please log in to access your notes.")
+    time.sleep(1)
+    st.switch_page("login.py")  # or redirect to your login/start page
+    st.stop()
 
 st.set_page_config(page_title="Notes", layout="wide")
 
@@ -13,7 +22,7 @@ st.markdown(
     "<style>" + open("style/style_notes.css").read() + "</style>", unsafe_allow_html=True
 )
 
-with open(NOTES_FILE, "r", encoding="utf-8") as f:
+with open(get_notes_path(), "r", encoding="utf-8") as f:
     notes_text = f.read()
 
 # === Code Editor with Line Numbers ===
@@ -32,7 +41,7 @@ updated_notes = st_ace(
 )
 
 if st.button("💾 Save"):
-    with open(NOTES_FILE, "w", encoding="utf-8") as f:
+    with open(get_notes_path(), "w", encoding="utf-8") as f:
         f.write(updated_notes)
     st.success("Notes saved.")
 

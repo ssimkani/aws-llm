@@ -1,13 +1,23 @@
-# src/app.py
+# src/pages/chat.py
 
+import os
 import streamlit as st
-from utils.rag_helper import load_vector_store, stream_rag_response
+from utils.rag_helper import load_vector_store, stream_rag_response, create_vector_store
 from utils.config import *
 from langchain_ollama import OllamaLLM
 from langchain.chains import RetrievalQA
 from datetime import datetime
+import time
 
 st.set_page_config(page_title=APP_TITLE, layout="wide")
+
+# === User Authentication Check ===
+if "uid" not in st.session_state:
+    st.warning("Please log in to access chat feature.")
+    time.sleep(1)
+    st.switch_page("login.py")
+    st.stop()
+
 st.title(APP_TITLE)
 st.markdown(
     "<style>" + open("style/style.css").read() + "</style>", unsafe_allow_html=True
@@ -22,17 +32,45 @@ if st.session_state.get("reset_chat", False):
 if "messages" not in st.session_state or not st.session_state["messages"]:
     st.session_state["messages"] = []
 
+
+# === Login Credentials ===
+# user_id = st.session_state.get("uid")
+# user_dir = f"data/users/{user_id}"
+# os.makedirs(user_dir, exist_ok=True)
+
+# st.session_state["notes_path"] = f"{user_dir}/notes.txt"
+# st.session_state["vector_path"] = f"{user_dir}/vectorstore/"
+
+# Ensure notes.txt exists
+# if not os.path.exists(st.session_state["notes_path"]):
+#     with open(st.session_state["notes_path"], "w", encoding="utf-8") as f:
+#         f.write("Welcome to your notes!\n")
+
+# # Ensure vector store directory exists
+# if not os.path.exists(st.session_state["vector_path"]):
+#     with open(st.session_state["vector_path"], "w", encoding="utf-8") as f:
+#         f.write("This is your vector store directory.\n")
+
+
 # === Load Vector Store ===
 @st.cache_resource(ttl=30)
 def get_vector_store():
     try:
         return load_vector_store()
-    except Exception as e:
-        st.error(f"Failed to load FAISS vector store: {e}")
-        st.stop()
-
+    except FileNotFoundError:
+        
+        # Vector store missing
+        create_vector_store(chunks=[])
+        
+        # After creation load again
+        return load_vector_store()
+    
+    # except Exception as e:
+    #     st.error(f"Error loading vector store: {e}")
+    #     st.stop()
 
 vector_store = get_vector_store()
+
 
 # Add temp to session state
 if "temperature" not in st.session_state:
@@ -90,9 +128,16 @@ if prompt:
             )
 
 # === New Chat Button in Container ===
-for _ in range(25):
+
+for _ in range(15):
     st.sidebar.write("")
 
 if st.sidebar.button("🆕 New Chat"):
     st.session_state["messages"] = []
     st.rerun()
+
+with st.sidebar:
+    if st.button("🔓 Log Out"):
+        for key in ["email", "uid", "id_token"]:
+            st.session_state.pop(key, None)
+        st.rerun()

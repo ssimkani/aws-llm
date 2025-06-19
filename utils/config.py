@@ -1,9 +1,9 @@
 # src/config.py
+import streamlit as st
 
-# === File Paths ===
-NOTES_FILE = "data/notes.txt"
-FAISS_INDEX_PATH = "vectorstore"
-HISTORY_FILE = "history/chat_history.json"
+# # === File Paths ===
+# NOTES_FILE = f"data/users/{st.session_state["uid"]}/notes.txt"
+# FAISS_INDEX_PATH = f"data/users/{st.session_state["uid"]}/vectorstore"
 
 # === Embedding Model ===
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"

@@ -11,6 +11,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.docstore.document import Document
 from langchain.schema import Document as LCDocument
 from .config import *
+from utils.paths import *
+from pathlib import Path
 
 
 def build_prompt_with_history(user_input, chat_history, docs):
@@ -85,10 +87,10 @@ def stream_rag_response(user_input, llm, retriever, chat_history):
 
 # === Load Notes from .txt ===
 def load_notes() -> List[Document]:
-    if not os.path.exists(NOTES_FILE):
-        raise FileNotFoundError(f"Notes file not found at: {NOTES_FILE}")
+    if not os.path.exists(get_notes_path()):
+        raise FileNotFoundError(f"Notes file not found at: {get_notes_path()}")
 
-    with open(NOTES_FILE, "r", encoding="utf-8") as f:
+    with open(get_notes_path(), "r", encoding="utf-8") as f:
         text = f.read()
 
     return [Document(page_content=text)]
@@ -110,33 +112,51 @@ def get_embeddings():
 # === Create or Load FAISS Vector Store ===
 def create_vector_store(chunks: List[LCDocument]):
     if not chunks:
-        st.success("📭 No chunks found. Creating an empty FAISS index.")
-
         # Determine embedding dimension (e.g., 384 for MiniLM)
         dim = 384
         index = faiss.IndexFlatL2(dim)
 
         # Save the empty FAISS index
-        faiss.write_index(index, os.path.join(FAISS_INDEX_PATH, "index.faiss"))
+        faiss.write_index(index, os.path.join(get_faiss_index_path(), "index.faiss"))
 
         # Save an empty metadata index.pkl (if required by your loader)
-        with open(os.path.join(FAISS_INDEX_PATH, "index.pkl"), "wb") as f:
+        with open(os.path.join(get_faiss_index_path(), "index.pkl"), "wb") as f:
             pickle.dump(([], {}), f)
 
         return
-    
+
     embeddings = get_embeddings()
     db = FAISS.from_documents(chunks, embeddings)
-    db.save_local(FAISS_INDEX_PATH)
+    db.save_local(get_faiss_index_path())
     return db
 
 
 def load_vector_store():
-    if not os.path.exists(FAISS_INDEX_PATH):
-        raise FileNotFoundError("FAISS index not found. Please build it first.")
-    return FAISS.load_local(
-        FAISS_INDEX_PATH, get_embeddings(), allow_dangerous_deserialization=True
-    )
+    path = Path(get_faiss_index_path())
+    index_path = path / "index.faiss"
+    metadata_path = path / "index.pkl"
+
+    if not index_path.exists():
+
+        # 1. Create index directory
+        path.mkdir(parents=True, exist_ok=True)
+
+        # 2. Create empty FAISS index
+        dim = 384  # match your embedding model's output size
+        index = faiss.IndexFlatL2(dim)
+        faiss.write_index(index, str(index_path))
+
+        # 3. Create empty metadata
+        with open(metadata_path, "wb") as f:
+            pickle.dump(([], {}), f)
+
+    try:
+        return FAISS.load_local(
+            str(path), get_embeddings(), allow_dangerous_deserialization=True
+        )
+    except Exception as e:
+        st.error(f"Failed to load FAISS index: {e}")
+        st.stop()
 
 
 # === Query the RAG System ===
