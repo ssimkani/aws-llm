@@ -1,3 +1,4 @@
+utils/firebase_config.py
 requirements.txt
 vectorstore/
 data/
