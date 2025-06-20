@@ -22,3 +22,5 @@ services:
       - ollama
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - ./data:/app/data
