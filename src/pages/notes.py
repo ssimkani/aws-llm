@@ -12,7 +12,7 @@ from utils.paths import get_notes_path
 if "uid" not in st.session_state:
     st.warning("Please log in to access your notes.")
     time.sleep(1)
-    st.switch_page("login.py")  # or redirect to your login/start page
+    st.switch_page("login.py")
     st.stop()
 
 st.set_page_config(page_title="Notes", layout="wide")

@@ -32,26 +32,6 @@ if st.session_state.get("reset_chat", False):
 if "messages" not in st.session_state or not st.session_state["messages"]:
     st.session_state["messages"] = []
 
-
-# === Login Credentials ===
-# user_id = st.session_state.get("uid")
-# user_dir = f"data/users/{user_id}"
-# os.makedirs(user_dir, exist_ok=True)
-
-# st.session_state["notes_path"] = f"{user_dir}/notes.txt"
-# st.session_state["vector_path"] = f"{user_dir}/vectorstore/"
-
-# Ensure notes.txt exists
-# if not os.path.exists(st.session_state["notes_path"]):
-#     with open(st.session_state["notes_path"], "w", encoding="utf-8") as f:
-#         f.write("Welcome to your notes!\n")
-
-# # Ensure vector store directory exists
-# if not os.path.exists(st.session_state["vector_path"]):
-#     with open(st.session_state["vector_path"], "w", encoding="utf-8") as f:
-#         f.write("This is your vector store directory.\n")
-
-
 # === Load Vector Store ===
 @st.cache_resource(ttl=30)
 def get_vector_store():
@@ -92,7 +72,14 @@ st.sidebar.markdown(
 )
 
 # === Load Ollama LLM ===
-llm = OllamaLLM(model=OLLAMA_BASE_MODEL, temperature=st.session_state["temperature"], SYSTEM_PROMPT=SYSTEM_PROMPT)
+ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
+llm = OllamaLLM(
+    model=OLLAMA_BASE_MODEL,
+    temperature=st.session_state["temperature"],
+    base_url=ollama_url,
+    SYSTEM_PROMPT=SYSTEM_PROMPT,
+)
 
 # === Display Previous Messages ===
 for msg in st.session_state.messages:
