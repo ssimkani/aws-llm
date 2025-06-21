@@ -17,7 +17,3 @@ CHUNK_OVERLAP = 300
 
 # === Streamlit UI ===
 APP_TITLE = "🛡️ Cyber Fortress"
-SYSTEM_PROMPT = (
-    "You are a calm, focused cybersecurity and AWS assistant helping prepare for Cyber Fortress."
-    "Answer clearly and concisely. If code or CLI is required, show that first."
-)

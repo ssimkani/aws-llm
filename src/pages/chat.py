@@ -78,7 +78,6 @@ llm = OllamaLLM(
     model=OLLAMA_BASE_MODEL,
     temperature=st.session_state["temperature"],
     base_url=ollama_url,
-    SYSTEM_PROMPT=SYSTEM_PROMPT,
 )
 
 # === Display Previous Messages ===
