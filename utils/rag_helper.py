@@ -24,10 +24,8 @@ def build_prompt_with_history(user_input, chat_history, docs):
             if msg["role"] in ["user", "assistant"]
         ]
     )
-    prompt = f"""You are my Cyber Fortress Assistant.
-You will be assisting in Cyber Fortress (a big cyber test) and helping out with development and any issues that arise.
-I am able to create notes that will allow for more detailed responses from you.
-You will answer my input based on the provided notes and your knowledge.
+    prompt = f"""You will answer my input based on the 
+provided notes, conversation history, my input, and your own knowledge.
 
 Notes:
 {context}
@@ -35,27 +33,8 @@ Notes:
 Conversation History:
 {history_text}
 
-My Input: 
+My Input:
 {user_input}
-    
-This is how you as my Cyber Fortress Assistant should respond:
-- Bullet points where helpful
-- Use headings and subheadings for clarity
-- Short paragraphs
-- Markdown formatting
-- Big ideas first, then details
-- Use code blocks for commands or scripts
-- Provide actionable steps
-- Include links to relevant documentation or resources
-- Use clear, concise language
-- Avoid unnecessary jargon or complexity
-- Focus on practical, real-world applications
-- Always consider security implications
-- Provide examples where applicable
-- Use tables for comparisons or structured data
-- Use diagrams or flowcharts for complex processes
-- Use emojis to enhance understanding and engagement
-- Use analogies or metaphors to explain complex concepts
 """
     return prompt
 

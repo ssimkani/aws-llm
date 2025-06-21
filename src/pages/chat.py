@@ -71,7 +71,7 @@ st.sidebar.markdown(
     f"**Current Behavior:** {'🎯 Precise' if st.session_state["temperature"] < 0.4 else '🧠 Creative' if st.session_state["temperature"] > 0.6 else '⚖️ Balanced'}"
 )
 
-# === Load Ollama LLM ===
+# === Load LLM ===
 ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
 llm = OllamaLLM(
