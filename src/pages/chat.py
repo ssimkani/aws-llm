@@ -96,7 +96,7 @@ if prompt:
 
     with st.chat_message("assistant"):
         # Stream assistant response with formatted markdown
-        retriever = vector_store.as_retriever(search_kwargs={"k": 6})
+        retriever = vector_store.as_retriever(search_kwargs={"k": 4})
         response, sources = stream_rag_response(prompt, llm, retriever, st.session_state.messages)
         st.session_state.messages.append({"role": "assistant", "content": response})
 

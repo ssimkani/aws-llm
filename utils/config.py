@@ -12,8 +12,8 @@ OLLAMA_BASE_MODEL = "llama3.2"
 FIREBASE_API_KEY = FIREBASE
 
 # === Chunking Settings ===
-CHUNK_SIZE = 2000
-CHUNK_OVERLAP = 300
+CHUNK_SIZE = 400
+CHUNK_OVERLAP = 60
 
 # === Streamlit UI ===
 APP_TITLE = "🛡️ Cyber Fortress"

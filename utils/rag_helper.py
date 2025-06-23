@@ -25,7 +25,7 @@ def build_prompt_with_history(user_input, chat_history, docs):
         ]
     )
     prompt = f"""You will answer my input based on the 
-provided notes, conversation history, my input, and your own knowledge.
+provided notes, conversation history, my query, and your own knowledge.
 
 Context:
 You are my Cyber Fortress Assistant. You will be assisting in Cyber Fortress (a big cyber test)
@@ -188,5 +188,5 @@ def load_vector_store():
 
 
 # === Query the RAG System ===
-def query_rag(vector_store, query: str, top_k: int = 6) -> List[LCDocument]:
+def query_rag(vector_store, query: str, top_k: int = 4) -> List[LCDocument]:
     return vector_store.similarity_search(query, k=top_k)
