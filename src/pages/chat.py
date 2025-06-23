@@ -72,12 +72,10 @@ st.sidebar.markdown(
 )
 
 # === Load LLM ===
-ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
 llm = OllamaLLM(
     model=OLLAMA_BASE_MODEL,
     temperature=st.session_state["temperature"],
-    base_url=ollama_url,
 )
 
 # === Display Previous Messages ===

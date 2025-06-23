@@ -97,7 +97,7 @@ My Input:
 
 def stream_rag_response(user_input, llm, retriever, chat_history):
     # Step 1: Retrieve docs
-    docs = retriever.get_relevant_documents(user_input)
+    docs = retriever.invoke(user_input)
 
     # Build prompt with embedded context
     prompt = build_prompt_with_history(user_input, chat_history, docs)

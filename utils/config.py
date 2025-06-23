@@ -1,6 +1,5 @@
 # src/config.py
 import streamlit as st
-from env.api_keys import *
 
 # === Embedding Model ===
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
