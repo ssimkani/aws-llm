@@ -15,6 +15,7 @@ charset-normalizer==3.4.2
 click==8.2.1
 cryptography==45.0.4
 dataclasses-json==0.6.7
+distro==1.9.0
 extra-streamlit-components==0.1.80
 faiss-cpu==1.11.0
 filelock==3.18.0
@@ -30,6 +31,7 @@ httpx-sse==0.4.0
 huggingface-hub==0.33.0
 idna==3.10
 Jinja2==3.1.6
+jiter==0.10.0
 joblib==1.5.1
 jsonpatch==1.33
 jsonpointer==3.0.0
