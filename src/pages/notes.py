@@ -19,7 +19,7 @@ st.set_page_config(page_title="Notes", layout="wide")
 
 st.title("📝 Notes")
 st.markdown(
-    "<style>" + open("style/style_notes.css").read() + "</style>", unsafe_allow_html=True
+    "<style>" + open("./style/style_notes.css").read() + "</style>", unsafe_allow_html=True
 )
 
 with open(get_notes_path(), "r", encoding="utf-8") as f:

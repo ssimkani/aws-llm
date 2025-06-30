@@ -20,7 +20,7 @@ if "uid" not in st.session_state:
 
 st.title(APP_TITLE)
 st.markdown(
-    "<style>" + open("style/style.css").read() + "</style>", unsafe_allow_html=True
+    "<style>" + open("./style/style.css").read() + "</style>", unsafe_allow_html=True
 )
 
 # === Session State Initialization ===
@@ -44,17 +44,13 @@ def get_vector_store():
         
         # After creation load again
         return load_vector_store()
-    
-    # except Exception as e:
-    #     st.error(f"Error loading vector store: {e}")
-    #     st.stop()
 
 vector_store = get_vector_store()
 
 
 # Add temp to session state
 if "temperature" not in st.session_state:
-    st.session_state["temperature"] = 0.3  # your preferred default
+    st.session_state["temperature"] = 0.3  # preferred default
 
 # === Sidebar: Temperature Slider ===
 st.sidebar.markdown("### 🤖 Model Behavior")
@@ -74,7 +70,7 @@ st.sidebar.markdown(
 # === Load LLM ===
 
 llm = OllamaLLM(
-    model=OLLAMA_BASE_MODEL,
+    model=MODEL,
     temperature=st.session_state["temperature"],
 )
 
@@ -93,9 +89,15 @@ if prompt:
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        # Stream assistant response with formatted markdown
+        
+        # Stream assistant response
         retriever = vector_store.as_retriever(search_kwargs={"k": 4})
-        response, sources = stream_rag_response(prompt, llm, retriever, st.session_state.messages)
+        response, sources = stream_rag_response(prompt, 
+                                                llm, 
+                                                retriever, 
+                                                st.session_state.messages, 
+                                                )
+
         st.session_state.messages.append({"role": "assistant", "content": response})
 
     # Source documents
