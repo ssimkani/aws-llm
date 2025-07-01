@@ -6,7 +6,7 @@ setup(
     packages=find_packages(include=["utils", "utils.*"]),
     install_requires=[],
     author="Seena",
-    description="Utility modules for AWS-LLM RAG chatbot and chat history handling.",
+    description="Utility module",
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",

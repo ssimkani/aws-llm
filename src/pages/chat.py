@@ -71,6 +71,7 @@ st.sidebar.markdown(
 
 llm = OllamaLLM(
     model=MODEL,
+    base_url=MODEL_URL,
     temperature=st.session_state["temperature"],
 )
 
