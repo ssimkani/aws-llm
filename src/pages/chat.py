@@ -79,26 +79,31 @@ llm = OllamaLLM(
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
+        
 
-# === Chat Input ===
+
+# Chat Input
 prompt = st.chat_input("Ask me anything...")
 if prompt:
     # Add user message to session state
     st.session_state.messages.append({"role": "user", "content": prompt})
 
+    if len(st.session_state.messages) >= 3:
+        history = st.session_state.messages[-3:-1]
+    else:
+        history = []
+
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        
         # Stream assistant response
         retriever = vector_store.as_retriever(search_kwargs={"k": 4})
         response, sources = stream_rag_response(prompt, 
                                                 llm, 
-                                                retriever, 
-                                                st.session_state.messages, 
+                                                retriever,
+                                                history
                                                 )
-
         st.session_state.messages.append({"role": "assistant", "content": response})
 
     # Source documents

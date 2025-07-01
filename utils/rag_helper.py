@@ -15,7 +15,7 @@ from utils.paths import *
 from pathlib import Path
 
 
-def build_prompt_with_history(user_input, chat_history, docs, max_history_tokens=MAX_HISTORY_TOKENS):
+def build_prompt_with_history(user_input, docs, chat_history):
     context = "\n\n".join([doc.page_content for doc in docs])
     history_text = "\n".join(
         [
@@ -25,12 +25,8 @@ def build_prompt_with_history(user_input, chat_history, docs, max_history_tokens
         ]
     )
 
-    history_tokens = len(history_text.split())
-    if history_tokens > max_history_tokens:
-        history_text = " ".join(history_text.split()[-max_history_tokens:])
-
     prompt = f"""You will answer my input based on the 
-provided notes, conversation history, my query, and your own knowledge.
+provided notes, conversation history, and your own knowledge.
 
 Notes:
 {context}
@@ -50,7 +46,7 @@ def stream_rag_response(user_input, llm, retriever, chat_history):
     docs = retriever.invoke(user_input)
 
     # Build prompt with embedded context
-    prompt = build_prompt_with_history(user_input, chat_history, docs)
+    prompt = build_prompt_with_history(user_input, docs, chat_history)
 
     # Stream response
     response_container = st.empty()
