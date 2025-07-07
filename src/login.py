@@ -6,6 +6,7 @@ import streamlit as st
 import os
 import time
 from utils.firebase_auth import firebase_login, firebase_signup
+from utils.firebase_db import *
 from utils.paths import *
 from utils.config import *
 from utils.rag_helper import create_vector_store

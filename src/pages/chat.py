@@ -1,10 +1,11 @@
 # src/pages/chat.py
 
+import google.generativeai as genai
+from utils.firebase_db import save_user_data
 import os
 import streamlit as st
 from utils.rag_helper import load_vector_store, stream_rag_response, create_vector_store
 from utils.config import *
-from langchain_ollama import OllamaLLM
 from langchain.chains import RetrievalQA
 from datetime import datetime
 import time
@@ -68,43 +69,56 @@ st.sidebar.markdown(
 )
 
 # === Load LLM ===
+genai.configure(api_key=GEMINI_API_KEY)
+llm = genai.GenerativeModel("models/gemini-1.5-flash")
 
-llm = OllamaLLM(
-    model=MODEL,
-    base_url=MODEL_URL,
-    temperature=st.session_state["temperature"],
-)
 
-# === Display Previous Messages ===
+# Previous messages
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-        
-
+    st.chat_message(msg["role"]).write(msg["content"])
 
 # Chat Input
-prompt = st.chat_input("Ask me anything...")
-if prompt:
-    # Add user message to session state
-    st.session_state.messages.append({"role": "user", "content": prompt})
+if user_input := st.chat_input("Ask me anything..."):
+    st.chat_message("user").write(user_input)
+    st.session_state.messages.append({"role": "user", "content": user_input})
 
-    if len(st.session_state.messages) >= 3:
-        history = st.session_state.messages[-3:-1]
-    else:
-        history = []
-
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
+    # === Call RAG pipeline with Gemini ===
     with st.chat_message("assistant"):
-        # Stream assistant response
-        retriever = vector_store.as_retriever(search_kwargs={"k": 4})
-        response, sources = stream_rag_response(prompt, 
-                                                llm, 
-                                                retriever,
-                                                history
-                                                )
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        # Show loading spinner
+        with st.spinner("Thinking..."):
+
+            # Call the RAG response function
+            response_text, sources = stream_rag_response(
+                user_input=user_input,
+                llm=llm,
+                retriever=vector_store.as_retriever(),
+                chat_history=st.session_state.messages,
+                temperature=st.session_state["temperature"],
+            )
+
+    st.session_state.messages.append({"role": "assistant", "content": response_text})
+    # prompt = st.chat_input("Ask me anything...")
+    # if prompt:
+    #     # Add user message to session state
+    #     st.session_state.messages.append({"role": "user", "content": prompt})
+
+    #     if len(st.session_state.messages) >= 3:
+    #         history = st.session_state.messages[-3:-1]
+    #     else:
+    #         history = []
+
+    #     with st.chat_message("user"):
+    #         st.markdown(prompt)
+
+    #     with st.chat_message("assistant"):
+    #         # Stream assistant response
+    #         retriever = vector_store.as_retriever(search_kwargs={"k": 4})
+    #         response, sources = stream_rag_response(prompt,
+    #                                                 llm,
+    #                                                 retriever,
+    #                                                 history
+    #                                                 )
+    #         st.session_state.messages.append({"role": "assistant", "content": response})
 
     # Source documents
     with st.expander("📚 Relevant Notes"):
@@ -129,6 +143,12 @@ if st.sidebar.button("🆕 New Chat"):
     st.rerun()
 
 with st.sidebar:
+    if st.button("🔼 Save Notes to Cloud"):
+        uid = st.session_state["uid"]
+        user_folder = f"data/users/{uid}"
+        save_user_data(uid, user_folder)
+        st.success("✅ Folder uploaded to Firestore!")
+    
     if st.button("🔓 Log Out"):
         for key in ["email", "uid", "id_token"]:
             st.session_state.pop(key, None)

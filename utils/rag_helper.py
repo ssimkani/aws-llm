@@ -1,5 +1,7 @@
 # src/rag_helper.py
 
+from google.generativeai.types import GenerationConfig
+import time
 import pickle
 import faiss
 import streamlit as st
@@ -40,7 +42,7 @@ My Input:
     return prompt
 
 
-def stream_rag_response(user_input, llm, retriever, chat_history):
+def stream_rag_response(user_input, llm, retriever, chat_history, temperature):
 
     # Retrieve docs
     docs = retriever.invoke(user_input)
@@ -48,15 +50,21 @@ def stream_rag_response(user_input, llm, retriever, chat_history):
     # Build prompt with embedded context
     prompt = build_prompt_with_history(user_input, docs, chat_history)
 
-    # Stream response
     response_container = st.empty()
-    full_response = ""
-    for chunk in llm.stream(prompt):
-        full_response += chunk
-        response_container.markdown(full_response + "▌")
-    response_container.markdown(full_response)
+    response = llm.generate_content(prompt,
+        generation_config=GenerationConfig(
+            temperature=temperature,
+                                    ))
+    response_text = response.text.strip()
 
-    return full_response, docs
+    # streaming output
+    with response_container:
+        for i in range(1, len(response_text) + 1):
+            st.markdown(response_text[:i] + "▌")
+            time.sleep(0.001)
+        st.markdown(response_text)
+
+    return response_text, docs
 
 
 # === Load Notes from .txt ===
