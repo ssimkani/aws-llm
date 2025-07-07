@@ -5,7 +5,6 @@ altair==5.5.0
 annotated-types==0.7.0
 anyio==4.9.0
 attrs==25.3.0
--e git+ssh://git@github.com/ssimkani/aws-llm.git@ed2c251643eb30de6f9d51739927c9970b3c8f1a#egg=awsllm_utils
 bcrypt==4.3.0
 blinker==1.9.0
 CacheControl==0.14.3
