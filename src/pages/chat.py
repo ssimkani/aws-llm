@@ -19,6 +19,24 @@ if "uid" not in st.session_state:
     st.switch_page("login.py")
     st.stop()
 
+from utils.firebase_db import load_user_notes_text, restore_faiss_files
+
+uid = st.session_state["uid"]
+user_dir = f"data/users/{uid}"
+vector_path = os.path.join(user_dir, "vectorstore")
+
+# Create local folders if they don't exist
+os.makedirs(vector_path, exist_ok=True)
+
+# Restore notes.txt from Firestore
+notes_text = load_user_notes_text(uid)
+with open(os.path.join(user_dir, "notes.txt"), "w", encoding="utf-8") as f:
+    f.write(notes_text)
+
+# Restore FAISS files from Firestore
+restore_faiss_files(uid, vector_path)
+
+
 st.title(APP_TITLE)
 st.markdown(
     "<style>" + open("./style/style.css").read() + "</style>", unsafe_allow_html=True

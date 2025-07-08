@@ -32,3 +32,24 @@ def save_user_data(uid: str, user_folder: str):
             db.collection("users").document(uid).collection("vectorstore").document(
                 filename
             ).set({"content_b64": encoded, "timestamp": firestore.SERVER_TIMESTAMP})
+
+
+def load_user_notes_text(uid: str):
+    doc = (
+        db.collection("users")
+        .document(uid)
+        .collection("notes")
+        .document("notes_txt")
+        .get()
+    )
+    return doc.to_dict()["text"] if doc.exists else ""
+
+
+def load_faiss_files(uid: str, destination_path: str):
+    vector_ref = db.collection("users").document(uid).collection("vectorstore")
+    for filename in ["index.faiss", "index.pkl"]:
+        doc = vector_ref.document(filename).get()
+        if doc.exists:
+            encoded = doc.to_dict()["content_b64"]
+            with open(os.path.join(destination_path, filename), "wb") as f:
+                f.write(base64.b64decode(encoded))
