@@ -55,6 +55,28 @@ if st.button("Submit"):
         # Ensure vector store directory exists
         os.makedirs(st.session_state["vector_path"], exist_ok=True)
 
+        # Load from cloud store
+        user_dir = f"data/users/{user_id}"
+        vector_path = os.path.join(user_dir, "vectorstore")
+        # Load notes
+        try:
+            notes_text = load_user_notes_text(user_id)
+            if notes_text:
+                with open(os.path.join(user_dir, "notes.txt"), "w", encoding="utf-8") as f:
+                    f.write(notes_text)
+                st.info("📝 Notes loaded.")
+            else:
+                st.warning("⚠️ No notes found in Firestore.")
+        except Exception as e:
+            st.error(f"Failed to load notes: {e}")
+
+        # load FAISS files
+        try:
+            load_faiss_files(user_id, vector_path)
+            st.info("📦 FAISS files loaded.")
+        except Exception as e:
+            st.error(f"Failed to restore FAISS files: {e}")
+
         st.success(f"{mode} successful! Welcome, {result['email']}")
         time.sleep(1)
 

@@ -6,6 +6,7 @@ from utils.rag_helper import load_notes, split_notes, create_vector_store
 from streamlit_ace import st_ace
 import time
 from utils.paths import get_notes_path
+from utils.firebase_db import save_user_data
 
 
 # Block access if user is not logged in
@@ -53,5 +54,12 @@ if st.button("💾 Save"):
     st.success("Vector store updated successfully.")
 
     st.session_state["reset_chat"] = True
-    time.sleep(2)
+    time.sleep(1)
     st.rerun()
+
+with st.sidebar:
+    if st.button("🔼 Save Notes to Cloud"):
+        uid = st.session_state["uid"]
+        user_folder = f"data/users/{uid}"
+        save_user_data(uid, user_folder)
+        st.success("✅ Folder uploaded to Firestore!")

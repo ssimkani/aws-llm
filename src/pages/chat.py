@@ -9,6 +9,7 @@ from utils.config import *
 from langchain.chains import RetrievalQA
 from datetime import datetime
 import time
+from utils.firebase_db import load_user_notes_text, load_faiss_files
 
 st.set_page_config(page_title=APP_TITLE, layout="wide")
 
@@ -18,24 +19,6 @@ if "uid" not in st.session_state:
     time.sleep(1)
     st.switch_page("login.py")
     st.stop()
-
-from utils.firebase_db import load_user_notes_text, restore_faiss_files
-
-uid = st.session_state["uid"]
-user_dir = f"data/users/{uid}"
-vector_path = os.path.join(user_dir, "vectorstore")
-
-# Create local folders if they don't exist
-os.makedirs(vector_path, exist_ok=True)
-
-# Restore notes.txt from Firestore
-notes_text = load_user_notes_text(uid)
-with open(os.path.join(user_dir, "notes.txt"), "w", encoding="utf-8") as f:
-    f.write(notes_text)
-
-# Restore FAISS files from Firestore
-restore_faiss_files(uid, vector_path)
-
 
 st.title(APP_TITLE)
 st.markdown(
@@ -161,12 +144,6 @@ if st.sidebar.button("🆕 New Chat"):
     st.rerun()
 
 with st.sidebar:
-    if st.button("🔼 Save Notes to Cloud"):
-        uid = st.session_state["uid"]
-        user_folder = f"data/users/{uid}"
-        save_user_data(uid, user_folder)
-        st.success("✅ Folder uploaded to Firestore!")
-    
     if st.button("🔓 Log Out"):
         for key in ["email", "uid", "id_token"]:
             st.session_state.pop(key, None)

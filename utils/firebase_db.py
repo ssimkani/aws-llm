@@ -3,6 +3,7 @@ import os
 import base64
 import firebase_admin
 from firebase_admin import credentials, firestore
+import streamlit as st
 
 # Load service account key only once
 if not firebase_admin._apps:
@@ -42,7 +43,8 @@ def load_user_notes_text(uid: str):
         .document("notes_txt")
         .get()
     )
-    return doc.to_dict()["text"] if doc.exists else ""
+    data = doc.to_dict()
+    return data["text"] if doc.exists else ""
 
 
 def load_faiss_files(uid: str, destination_path: str):
