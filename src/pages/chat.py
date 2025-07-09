@@ -1,15 +1,12 @@
 # src/pages/chat.py
 
 import google.generativeai as genai
-from utils.firebase_db import save_user_data
 import os
 import streamlit as st
 from utils.rag_helper import load_vector_store, stream_rag_response, create_vector_store
 from utils.config import *
-from langchain.chains import RetrievalQA
 from datetime import datetime
 import time
-from utils.firebase_db import load_user_notes_text, load_faiss_files
 
 st.set_page_config(page_title=APP_TITLE, layout="wide")
 
